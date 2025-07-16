@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
+  <script>
+    window.onload = function () {
+      const hash = window.location.hash;
+      const isRecovery = hash.includes("type=recovery");
+      const target = isRecovery ? "reset-password.html" : "email-verified.html";
+      window.location.href = target + hash;
+    };
+  </script>
+</head>
+<body>
+  <h1 style="text-align:center; color: #E35314; font-family: sans-serif;">
+    Redirecting...
+  </h1>
+</body>
+</html>
