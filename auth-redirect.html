@@ -4,19 +4,31 @@
   <meta charset="UTF-8">
   <title>Redirecting...</title>
   <script>
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.substring(1));
-    const type = params.get("type");
+    window.onload = function () {
+      const hash = window.location.hash;
+      const params = new URLSearchParams(hash.slice(1));
+      const type = params.get("type");
 
-    if (type === "recovery") {
-      window.location.href = "https://reciperoll.github.io/reciperollx-site/reset-password.html" + hash;
-    } else {
-      window.location.href = "https://reciperoll.github.io/reciperollx-site/email-verified.html" + hash;
-    }
+      let target = "";
+      switch (type) {
+        case "recovery":
+          target = "reset-password.html";
+          break;
+        case "signup":
+        case "email_change":
+          target = "email-verified.html";
+          break;
+        default:
+          document.body.innerHTML = "<h2 style='color: white;'>Unsupported redirect type.</h2>";
+          return;
+      }
+
+      // Append the full hash (token, etc.) to the redirected page
+      window.location.href = `${target}${hash}`;
+    };
   </script>
 </head>
-<body style="background:#164147; color:#fff; text-align:center; padding:50px; font-family:sans-serif;">
+<body style="background-color:#164147; color:white; font-family:sans-serif; text-align:center; padding-top:100px;">
   <h1>Redirecting...</h1>
-  <p>Please wait while we redirect you.</p>
 </body>
 </html>
