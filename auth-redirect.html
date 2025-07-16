@@ -1,21 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Redirecting...</title>
   <script>
-    window.onload = function () {
-      const hash = window.location.hash;
-      const isRecovery = hash.includes("type=recovery");
-      const target = isRecovery ? "reset-password.html" : "email-verified.html";
-      window.location.href = target + hash;
-    };
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.substring(1));
+    const type = params.get("type");
+
+    if (type === "recovery") {
+      window.location.href = "https://reciperoll.github.io/reciperollx-site/reset-password.html" + hash;
+    } else {
+      window.location.href = "https://reciperoll.github.io/reciperollx-site/email-verified.html" + hash;
+    }
   </script>
 </head>
-<body>
-  <h1 style="text-align:center; color: #E35314; font-family: sans-serif;">
-    Redirecting...
-  </h1>
+<body style="background:#164147; color:#fff; text-align:center; padding:50px; font-family:sans-serif;">
+  <h1>Redirecting...</h1>
+  <p>Please wait while we redirect you.</p>
 </body>
 </html>
