@@ -2,30 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Redirecting...</title>
-  <script>
-    window.onload = function () {
-      const hash = window.location.hash;
-      const query = window.location.search;
-
-      const isRecovery = hash.includes("type=recovery") || query.includes("type=recovery");
-      const isVerify = hash.includes("type=signup") || query.includes("type=signup");
-      const isCodeOnly = query.includes("code="); // fallback
-
-      if (isRecovery) {
-        window.location.href = "reset-password.html" + (hash || query);
-      } else if (isVerify) {
-        window.location.href = "email-verified.html" + (hash || query);
-      } else if (isCodeOnly) {
-        // assume recovery if only a code is present
-        window.location.href = "reset-password.html" + query;
-      } else {
-        document.body.innerHTML = "<h1 style='color:red;text-align:center;'>Unsupported redirect type</h1>";
-      }
-    };
-  </script>
+  <title>Reset Your Password</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      background-color: #164147;
+      font-family: sans-serif;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #E35314;
+      color: black;
+      border: none;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    a {
+      color: #FFB74D;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-  <h1 style="text-align:center; font-family:sans-serif;">Redirecting...</h1>
+  <h1>Reset Your Password</h1>
+  <p>Enter your new password below</p>
+  <input type="password" id="new-password" placeholder="New Password" />
+  <br />
+  <button onclick="resetPassword()">Submit</button>
+  <div id="message"></div>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://inkqnvlewutbgqcgqjll.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Fudmxld3V0YmdxY2dxamxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTIzMjQsImV4cCI6MjA2NDcyODMyNH0.zjpzImE26ZyxMK8ZzttMyFt24l2AxjkeT60M8Mjf0Ks'
+    );
+
+    async function resetPassword() {
+      const newPassword = document.getElementById('new-password').value;
+      const messageDiv = document.getElementById('message');
+
+      const urlParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = urlParams.get("access_token");
+
+      if (!accessToken) {
+        messageDiv.innerText = "Access token is missing or expired.";
+        return;
+      }
+
+      // Set the session using the access token
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: ''
+      });
+
+      if (sessionError) {
+        messageDiv.innerText = "Session error: " + sessionError.message;
+        return;
+      }
+
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        messageDiv.innerText = "Failed to reset password: " + error.message;
+      } else {
+        messageDiv.innerHTML = `
+          ✅ Password has been reset successfully!<br><br>
+          Please <strong>return to the RecipeRoll X app</strong> and log in with your new password.
+        `;
+      }
+    }
+  </script>
 </body>
 </html>
