@@ -1,34 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Redirecting...</title>
   <script>
     window.onload = function () {
       const hash = window.location.hash;
-      const params = new URLSearchParams(hash.slice(1));
-      const type = params.get("type");
+      const isRecovery = hash.includes("type=recovery");
+      const isVerify = hash.includes("type=signup");
 
-      let target = "";
-      switch (type) {
-        case "recovery":
-          target = "reset-password.html";
-          break;
-        case "signup":
-        case "email_change":
-          target = "email-verified.html";
-          break;
-        default:
-          document.body.innerHTML = "<h2 style='color: white;'>Unsupported redirect type.</h2>";
-          return;
+      if (isRecovery) {
+        window.location.href = "reset-password.html" + hash;
+      } else if (isVerify) {
+        window.location.href = "email-verified.html" + hash;
+      } else {
+        document.body.innerHTML = "<h1 style='color:red;text-align:center;'>Unsupported redirect type</h1>";
       }
-
-      // Append the full hash (token, etc.) to the redirected page
-      window.location.href = `${target}${hash}`;
     };
   </script>
 </head>
-<body style="background-color:#164147; color:white; font-family:sans-serif; text-align:center; padding-top:100px;">
-  <h1>Redirecting...</h1>
+<body>
+  <h1 style="text-align:center; font-family:sans-serif;">Redirecting...</h1>
 </body>
 </html>
