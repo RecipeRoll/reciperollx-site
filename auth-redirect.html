@@ -1,92 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Reset Your Password</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta charset="UTF-8">
+  <title>Reset Password</title>
   <style>
-    body {
-      background-color: #164147;
-      font-family: sans-serif;
-      color: white;
-      text-align: center;
-      padding: 40px;
-    }
-    input, button {
-      padding: 10px;
-      margin: 10px;
-      font-size: 16px;
-    }
-    button {
-      background-color: #E35314;
-      color: black;
-      border: none;
-      cursor: pointer;
-    }
-    #message {
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    a {
-      color: #FFB74D;
-      text-decoration: none;
-    }
+    body { font-family: sans-serif; text-align: center; margin-top: 5rem; }
+    input, button { margin: 0.5rem; padding: 0.5rem; }
+    .success, .error { margin-top: 1rem; font-weight: bold; }
+    .success { color: green; }
+    .error { color: red; }
   </style>
 </head>
 <body>
   <h1>Reset Your Password</h1>
-  <p>Enter your new password below</p>
   <input type="password" id="new-password" placeholder="New Password" />
-  <br />
+  <br>
   <button onclick="resetPassword()">Submit</button>
   <div id="message"></div>
 
-  <script>
-  const supabase = supabase.createClient(
-    'https://inkqnvlewutbgqcgqjll.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Fudmxld3V0YmdxY2dxamxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTIzMjQsImV4cCI6MjA2NDcyODMyNH0.zjpzImE26ZyxMK8ZzttMyFt24l2AxjkeT60M8Mjf0Ks'
-  );
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  async function resetPassword() {
-    const newPassword = document.getElementById('new-password').value;
-    const messageDiv = document.getElementById('message');
+    const supabase = createClient('https://inkqnvlewutbgqcgqjll.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Fudmxld3V0YmdxY2dxamxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTIzMjQsImV4cCI6MjA2NDcyODMyNH0.zjpzImE26ZyxMK8ZzttMyFt24l2AxjkeT60M8Mjf0Ks')
 
-    // Get token from query string instead of hash
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get("access_token");
-    const refreshToken = urlParams.get("refresh_token");
+    const url = new URL(window.location.href)
+    const accessToken = url.searchParams.get('access_token')
 
-    if (!accessToken || !refreshToken) {
-      messageDiv.innerText = "Access token is missing or expired.";
-      return;
+    async function resetPassword() {
+      const password = document.getElementById('new-password').value
+      const messageDiv = document.getElementById('message')
+
+      if (!accessToken) {
+        messageDiv.textContent = 'Missing or expired token.'
+        messageDiv.className = 'error'
+        return
+      }
+
+      const { error } = await supabase.auth.updateUser(
+        { password },
+        { accessToken }
+      )
+
+      if (error) {
+        messageDiv.textContent = error.message
+        messageDiv.className = 'error'
+      } else {
+        messageDiv.textContent = '✅ Password has been reset. Please return to RecipeRoll X and log in.'
+        messageDiv.className = 'success'
+      }
     }
-
-    // Set session with Supabase
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    });
-
-    if (sessionError) {
-      messageDiv.innerText = "Session error: " + sessionError.message;
-      return;
-    }
-
-    // Now update the password
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (error) {
-      messageDiv.innerText = "Failed to reset password: " + error.message;
-    } else {
-      messageDiv.innerHTML = `
-        ✅ Password has been reset successfully!<br><br>
-        Please <strong>return to the RecipeRoll X app</strong> and log in with your new password.
-      `;
-    }
-  }
   </script>
 </body>
 </html>
