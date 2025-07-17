@@ -43,47 +43,50 @@
   <div id="message"></div>
 
   <script>
-    const supabase = supabase.createClient(
-      'https://inkqnvlewutbgqcgqjll.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Fudmxld3V0YmdxY2dxamxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTIzMjQsImV4cCI6MjA2NDcyODMyNH0.zjpzImE26ZyxMK8ZzttMyFt24l2AxjkeT60M8Mjf0Ks'
-    );
+  const supabase = supabase.createClient(
+    'https://inkqnvlewutbgqcgqjll.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Fudmxld3V0YmdxY2dxamxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTIzMjQsImV4cCI6MjA2NDcyODMyNH0.zjpzImE26ZyxMK8ZzttMyFt24l2AxjkeT60M8Mjf0Ks'
+  );
 
-    async function resetPassword() {
-      const newPassword = document.getElementById('new-password').value;
-      const messageDiv = document.getElementById('message');
+  async function resetPassword() {
+    const newPassword = document.getElementById('new-password').value;
+    const messageDiv = document.getElementById('message');
 
-      const urlParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = urlParams.get("access_token");
+    // Get token from query string instead of hash
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get("access_token");
+    const refreshToken = urlParams.get("refresh_token");
 
-      if (!accessToken) {
-        messageDiv.innerText = "Access token is missing or expired.";
-        return;
-      }
-
-      // Set the session using the access token
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: ''
-      });
-
-      if (sessionError) {
-        messageDiv.innerText = "Session error: " + sessionError.message;
-        return;
-      }
-
-      const { data, error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (error) {
-        messageDiv.innerText = "Failed to reset password: " + error.message;
-      } else {
-        messageDiv.innerHTML = `
-          ✅ Password has been reset successfully!<br><br>
-          Please <strong>return to the RecipeRoll X app</strong> and log in with your new password.
-        `;
-      }
+    if (!accessToken || !refreshToken) {
+      messageDiv.innerText = "Access token is missing or expired.";
+      return;
     }
+
+    // Set session with Supabase
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+
+    if (sessionError) {
+      messageDiv.innerText = "Session error: " + sessionError.message;
+      return;
+    }
+
+    // Now update the password
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      messageDiv.innerText = "Failed to reset password: " + error.message;
+    } else {
+      messageDiv.innerHTML = `
+        ✅ Password has been reset successfully!<br><br>
+        Please <strong>return to the RecipeRoll X app</strong> and log in with your new password.
+      `;
+    }
+  }
   </script>
 </body>
 </html>
