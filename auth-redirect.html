@@ -15,7 +15,7 @@
   <h1>Reset Your Password</h1>
   <input type="password" id="new-password" placeholder="New Password" />
   <br>
-  <button onclick="resetPassword()">Submit</button>
+  <button id="submit-button">Submit</button>
   <div id="message"></div>
 
   <script type="module">
@@ -25,30 +25,43 @@
 
     const url = new URL(window.location.href)
     const accessToken = url.searchParams.get('access_token')
+    const refreshToken = url.searchParams.get('refresh_token')
 
-    async function resetPassword() {
-      const password = document.getElementById('new-password').value
-      const messageDiv = document.getElementById('message')
+    const messageDiv = document.getElementById('message')
+    const button = document.getElementById('submit-button')
 
-      if (!accessToken) {
+    button.addEventListener('click', async () => {
+      const newPassword = document.getElementById('new-password').value
+
+      if (!accessToken || !refreshToken) {
         messageDiv.textContent = 'Missing or expired token.'
         messageDiv.className = 'error'
         return
       }
 
-      const { error } = await supabase.auth.updateUser(
-        { password },
-        { accessToken }
-      )
+      // Set the session so the user is authenticated
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      })
 
-      if (error) {
-        messageDiv.textContent = error.message
+      if (sessionError) {
+        messageDiv.textContent = sessionError.message
+        messageDiv.className = 'error'
+        return
+      }
+
+      // Now update the password
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+
+      if (updateError) {
+        messageDiv.textContent = updateError.message
         messageDiv.className = 'error'
       } else {
         messageDiv.textContent = '✅ Password has been reset. Please return to RecipeRoll X and log in.'
         messageDiv.className = 'success'
       }
-    }
+    })
   </script>
 </body>
 </html>
