@@ -6,13 +6,19 @@
   <script>
     window.onload = function () {
       const hash = window.location.hash;
-      const isRecovery = hash.includes("type=recovery");
-      const isVerify = hash.includes("type=signup");
+      const query = window.location.search;
+
+      const isRecovery = hash.includes("type=recovery") || query.includes("type=recovery");
+      const isVerify = hash.includes("type=signup") || query.includes("type=signup");
+      const isCodeOnly = query.includes("code="); // fallback
 
       if (isRecovery) {
-        window.location.href = "reset-password.html" + hash;
+        window.location.href = "reset-password.html" + (hash || query);
       } else if (isVerify) {
-        window.location.href = "email-verified.html" + hash;
+        window.location.href = "email-verified.html" + (hash || query);
+      } else if (isCodeOnly) {
+        // assume recovery if only a code is present
+        window.location.href = "reset-password.html" + query;
       } else {
         document.body.innerHTML = "<h1 style='color:red;text-align:center;'>Unsupported redirect type</h1>";
       }
